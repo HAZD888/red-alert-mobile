@@ -13,7 +13,7 @@
   --gold:#b8860b; --gold-bg:#faf3df; --green:#1e8e5a; --green-bg:#e7f6ee;
   --red:#c0392b; --line:#e8e4d8; --nav:#ffffff;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
 #app{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom));}
 header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#2b2f36,#3d434e);color:#fff;padding:18px 18px 16px}
 header h1{font-size:19px;font-weight:700;letter-spacing:.5px}
@@ -71,6 +71,8 @@ input:focus,select:focus{border-color:var(--gold)}
 .stay .nums .val b{color:var(--gold)}
 .stay .nums .rb b{color:var(--green)}
 .empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px}
+.ydiv{font-size:13px;font-weight:700;color:var(--muted);margin:14px 4px 8px;letter-spacing:1px}
+#stayList .ydiv:first-child{margin-top:0}
 /* stats */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .kpi{background:var(--card);border-radius:14px;padding:13px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
@@ -371,9 +373,12 @@ function renderList(){
   const box=document.getElementById("stayList");
   if(!stays.length){box.innerHTML='<div class="empty">还没有记录<br>去「记一笔」记下你的第一次入住吧 🏨</div>';return}
   const arr=[...stays].sort((a,b)=>(b.checkin||"").localeCompare(a.checkin||""));
-  box.innerHTML=arr.map(s=>{
+  let html="",lastY="";
+  arr.forEach(s=>{
+    const y=(s.checkin||"").slice(0,4)||"未知年份";
+    if(y!==lastY){html+=`<div class="ydiv">${y} 年</div>`;lastY=y}
     const r=rebateRate(s);
-    return `<div class="stay" onclick="openSheet('${s.id}')">
+    html+=`<div class="stay" onclick="openSheet('${s.id}')">
       <div class="top"><div><div class="hotel">${esc(s.hotel)}</div>
       <div class="meta">${esc(s.group||"")} · ${s.checkin} → ${s.checkout} · ${nightsOf(s)}晚</div></div>
       ${badge(s)}</div>
@@ -383,7 +388,8 @@ function renderList(){
         <div class="rb">回血<b>${fmt(rebate(s))}</b></div>
         <div class="paid">回血率<b>${s.paid>0?Math.round(r*100)+"%":"—"}</b></div>
       </div></div>`;
-  }).join("");
+  });
+  box.innerHTML=html;
 }
 function esc(t){return String(t||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
