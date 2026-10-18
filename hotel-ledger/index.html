@@ -124,10 +124,8 @@ nav button.on{color:var(--gold);font-weight:700}
         <label class="f"><span>酒店集团</span><select id="f_group"></select></label>
         <label class="f"><span>积分单价（元/分，可改）</span><input type="number" id="f_prate" step="0.001" min="0" value="0.035"></label>
       </div>
-      <div class="row2">
-        <label class="f"><span>入住日期</span><input type="date" id="f_in"></label>
-        <label class="f"><span>退房日期</span><input type="date" id="f_out"></label>
-      </div>
+      <label class="f"><span>入住日期</span><input type="date" id="f_in"></label>
+      <label class="f"><span>退房日期</span><input type="date" id="f_out"></label>
       <div class="row2">
         <label class="f"><span>实付总金额（元）</span><input type="number" id="f_paid" min="0" step="0.01" placeholder="400"></label>
         <label class="f"><span>实际入住房型每晚市价（元）</span><input type="number" id="f_room" min="0" step="0.01" placeholder="1000"></label>
@@ -143,7 +141,7 @@ nav button.on{color:var(--gold);font-weight:700}
       <div class="tplchips" id="amenChips"></div>
       <div id="amenRows"></div>
       <button type="button" class="addline" onclick="addRow('amen')">＋ 添加一项备品</button>
-      <div class="hint">点上面的快捷标签快速添加，名称和单价都能改——普通矿泉水和依云就不是一个价。</div>
+      <div class="hint">点上面的快捷标签快速填名称，价格你自己定——普通矿泉水和依云就不是一个价。</div>
     </div>
     <div class="card">
       <h3>🎁 权益回血 <span class="tag">早餐/酒廊/升级等</span></h3>
@@ -244,9 +242,9 @@ function initForm(){
   document.getElementById("f_in").value=iso(t);
   document.getElementById("f_out").value=iso(tm);
   const ac=document.getElementById("amenChips");
-  ac.innerHTML=AMEN_TPL.map((x,i)=>`<span class="chip" onclick="addRow('amen',${i})">${x[0]} ¥${x[1]}</span>`).join("");
+  ac.innerHTML=AMEN_TPL.map((x,i)=>`<span class="chip" onclick="addRow('amen',${i})">${x[0]}</span>`).join("");
   const pc=document.getElementById("perkChips");
-  pc.innerHTML=PERK_TPL.map((x,i)=>`<span class="chip" onclick="addRow('perk',${i})">${x[0]} ¥${x[1]}</span>`).join("");
+  pc.innerHTML=PERK_TPL.map((x,i)=>`<span class="chip" onclick="addRow('perk',${i})">${x[0]}</span>`).join("");
   document.getElementById("stayForm").addEventListener("input",liveCalc);
   document.getElementById("stayForm").addEventListener("change",liveCalc);
   liveCalc();
@@ -254,8 +252,8 @@ function initForm(){
 function addRow(kind,tplIdx){
   const box=document.getElementById(kind==="amen"?"amenRows":"perkRows");
   let name="",price="",qty="1";
-  if(kind==="amen"&&tplIdx!=null){name=AMEN_TPL[tplIdx][0];price=AMEN_TPL[tplIdx][1]}
-  if(kind==="perk"&&tplIdx!=null){name=PERK_TPL[tplIdx][0];price=PERK_TPL[tplIdx][1]}
+  if(kind==="amen"&&tplIdx!=null){name=AMEN_TPL[tplIdx][0]}
+  if(kind==="perk"&&tplIdx!=null){name=PERK_TPL[tplIdx][0]}
   const d=document.createElement("div");d.className="dynrow";
   if(kind==="amen"){
     d.innerHTML=`<input type="text" placeholder="名称" value="${name}" class="rn"><input type="number" min="0" step="1" placeholder="数量" value="${qty}" class="rq"><input type="number" min="0" step="0.01" placeholder="单价" value="${price}" class="rp"><span class="sub"></span><button type="button" class="rm" onclick="this.parentNode.remove();liveCalc()">×</button>`;
