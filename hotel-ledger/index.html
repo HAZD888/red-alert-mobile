@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>酒店回本记账器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f4f2ec; --card:#ffffff; --ink:#22252a; --muted:#8a8f98;
+  --gold:#b8860b; --gold-bg:#faf3df; --green:#1e8e5a; --green-bg:#e7f6ee;
+  --red:#c0392b; --line:#e8e4d8; --nav:#ffffff;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+#app{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#2b2f36,#3d434e);color:#fff;padding:18px 18px 16px}
+header h1{font-size:19px;font-weight:700;letter-spacing:.5px}
+header p{font-size:12px;opacity:.65;margin-top:3px}
+main{padding:14px 14px 20px}
+.tab{display:none}
+.tab.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:14px;padding:15px 15px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h3{font-size:14px;margin-bottom:10px;color:var(--ink);display:flex;align-items:center;gap:6px}
+.card h3 .tag{font-size:11px;background:var(--gold-bg);color:var(--gold);border-radius:20px;padding:2px 9px;font-weight:600}
+label.f{display:block;margin-bottom:11px}
+label.f>span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=number],input[type=date],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;color:var(--ink);outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+.row2{display:flex;gap:10px}
+.row2>label{flex:1}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+.btn-go{background:linear-gradient(135deg,#c9a227,#a8820a);color:#fff}
+.btn-go:active{transform:scale(.98)}
+.btn-ghost{background:#f0ede3;color:var(--ink);font-weight:600;font-size:14px;padding:10px}
+.btn-danger{background:#fdecea;color:var(--red);font-weight:600;font-size:14px;padding:10px}
+.tplchips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 4px}
+.chip{font-size:12.5px;background:#f0ede3;border:1px solid var(--line);border-radius:20px;padding:5px 11px;cursor:pointer}
+.chip:active{background:var(--gold-bg);border-color:var(--gold)}
+.dynrow{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.dynrow input[type=text]{flex:1.4}
+.dynrow input[type=number]{flex:1}
+.dynrow .sub{font-size:12px;color:var(--gold);min-width:64px;text-align:right;font-weight:700}
+.dynrow .rm{border:none;background:none;color:var(--red);font-size:19px;padding:4px 2px;cursor:pointer;line-height:1}
+.addline{font-size:13px;color:var(--gold);background:none;border:1px dashed var(--gold);border-radius:10px;width:100%;padding:8px;cursor:pointer;margin-top:2px}
+/* preview */
+#preview{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom));background:#2b2f36;color:#fff;border-radius:14px;padding:12px 15px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#preview .pv{display:flex;justify-content:space-between;font-size:13px;opacity:.85;margin:2px 0}
+#preview .pv b{opacity:1}
+#preview .pvr{display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15)}
+#preview .pvr .rate{font-size:24px;font-weight:800;color:#ffd76a}
+/* list cards */
+.stay{background:var(--card);border-radius:14px;padding:14px 15px;margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.05);cursor:pointer}
+.stay .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.stay .hotel{font-size:16px;font-weight:700}
+.stay .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{font-size:12px;font-weight:700;border-radius:20px;padding:4px 11px;white-space:nowrap}
+.badge.s1{background:var(--green-bg);color:var(--green)}
+.badge.s2{background:var(--gold-bg);color:var(--gold)}
+.badge.s3{background:#eef1f4;color:#5a6b7c}
+.badge.s4{background:#fdecea;color:var(--red)}
+.stay .nums{display:flex;gap:14px;margin-top:10px;font-size:13px}
+.stay .nums div b{display:block;font-size:16px}
+.stay .nums .paid b{color:var(--ink)}
+.stay .nums .val b{color:var(--gold)}
+.stay .nums .rb b{color:var(--green)}
+.empty{text-align:center;color:var(--muted);padding:44px 20px;font-size:14px}
+/* stats */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border-radius:14px;padding:13px 14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.kpi .t{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:800;margin-top:3px}
+.kpi .v.gold{color:var(--gold)} .kpi .v.green{color:var(--green)}
+.grow{background:var(--card);border-radius:12px;padding:11px 13px;margin-bottom:9px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.grow .gt{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:7px}
+.grow .gt span:last-child{color:var(--green);font-weight:800}
+.bar{height:9px;background:#f0ede3;border-radius:6px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#d4af37,#a8820a);border-radius:6px}
+.grow .gs{font-size:12px;color:var(--muted)}
+/* bottom nav */
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:20}
+nav button{flex:1;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:21px}
+nav button.on{color:var(--gold);font-weight:700}
+/* modal */
+#mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:30;align-items:flex-end;justify-content:center}
+#mask.show{display:flex}
+#sheet{background:#fff;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:18px;animation:up .22s ease}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+#sheet h2{font-size:17px;margin-bottom:4px}
+#sheet .dmeta{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.dline{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid #f2efe6}
+.dline.total{font-weight:800;font-size:15.5px;border-bottom:none}
+.dline .pos{color:var(--green);font-weight:700}
+.dline .neg{color:var(--ink);font-weight:700}
+.dsub{font-size:12px;color:var(--muted);margin:12px 0 4px;font-weight:700}
+.sheetbtns{display:flex;gap:10px;margin-top:16px}
+.sheetbtns button{flex:1}
+.xbtn{text-align:right;margin:-6px -2px 6px}
+.xbtn button{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer}
+.toolbar{display:flex;gap:8px;margin-bottom:12px}
+.toolbar button{flex:1}
+.filehide{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <h1>🏨 酒店回本记账器</h1>
+  <p>花了多少，住出了多少价值，一笔一笔记清楚</p>
+</header>
+<main>
+  <!-- 记一笔 -->
+  <section class="tab active" id="tab-add">
+    <form id="stayForm" onsubmit="return false">
+    <div class="card">
+      <h3>🏨 入住信息</h3>
+      <label class="f"><span>酒店名称</span><input type="text" id="f_hotel" placeholder="例如：杭州西湖希尔顿" autocomplete="off"></label>
+      <div class="row2">
+        <label class="f"><span>酒店集团</span><select id="f_group"></select></label>
+        <label class="f"><span>积分单价（元/分，可改）</span><input type="number" id="f_prate" step="0.001" min="0" value="0.035"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span>入住日期</span><input type="date" id="f_in"></label>
+        <label class="f"><span>退房日期</span><input type="date" id="f_out"></label>
+      </div>
+      <div class="row2">
+        <label class="f"><span>实付总金额（元）</span><input type="number" id="f_paid" min="0" step="0.01" placeholder="400"></label>
+        <label class="f"><span>实际入住房型每晚市价（元）</span><input type="number" id="f_room" min="0" step="0.01" placeholder="1000"></label>
+      </div>
+      <div class="hint">💡 被升级了就填升级后房型的门市价；没升级就填你订的房型市价。晚数按日期自动算。</div>
+    </div>
+    <div class="card">
+      <h3>⭐ 积分回血</h3>
+      <label class="f"><span>本次获得积分</span><input type="number" id="f_points" min="0" step="1" placeholder="2000"></label>
+    </div>
+    <div class="card">
+      <h3>🧴 拿走的备品 <span class="tag">吃的喝的用的</span></h3>
+      <div class="tplchips" id="amenChips"></div>
+      <div id="amenRows"></div>
+      <button type="button" class="addline" onclick="addRow('amen')">＋ 添加一项备品</button>
+      <div class="hint">点上面的快捷标签快速添加，名称和单价都能改——普通矿泉水和依云就不是一个价。</div>
+    </div>
+    <div class="card">
+      <h3>🎁 权益回血 <span class="tag">早餐/酒廊/升级等</span></h3>
+      <div class="tplchips" id="perkChips"></div>
+      <div id="perkRows"></div>
+      <button type="button" class="addline" onclick="addRow('perk')">＋ 添加一项权益</button>
+    </div>
+    <div class="card">
+      <h3>📝 备注</h3>
+      <label class="f"><span>随便记点什么（可选）</span><input type="text" id="f_note" placeholder="例如：前台小姐姐人很好" autocomplete="off"></label>
+    </div>
+    <div id="preview">
+      <div class="pv"><span>💵 现金价格（实付）</span><b id="pv_paid">¥0</b></div>
+      <div class="pv"><span>⭐ 积分回血后</span><b id="pv_afterpts">¥0</b></div>
+      <div class="pv"><span>💎 总价值（含权益）</span><b id="pv_val">¥0</b></div>
+      <div class="pvr"><span>回血率</span><span class="rate" id="pv_rate">—</span></div>
+    </div>
+    <button class="btn btn-go" onclick="saveStay()">✅ 记下这一笔</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-ghost" id="cancelEdit" style="display:none" onclick="cancelEdit()">取消编辑</button>
+    </form>
+  </section>
+  <!-- 记录 -->
+  <section class="tab" id="tab-list">
+    <div class="toolbar">
+      <button class="btn btn-ghost" onclick="exportJSON()">📤 导出备份</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('impFile').click()">📥 导入备份</button>
+      <input type="file" id="impFile" class="filehide" accept=".json,application/json" onchange="importJSON(this)">
+    </div>
+    <div id="stayList"></div>
+  </section>
+  <!-- 统计 -->
+  <section class="tab" id="tab-stats">
+    <div class="kpis">
+      <div class="kpi"><div class="t">累计入住</div><div class="v" id="s_nights">0 晚</div></div>
+      <div class="kpi"><div class="t">记账笔数</div><div class="v" id="s_count">0 笔</div></div>
+      <div class="kpi"><div class="t">累计实付</div><div class="v" id="s_paid">¥0</div></div>
+      <div class="kpi"><div class="t">⭐ 积分回血后</div><div class="v" id="s_afterpts">¥0</div></div>
+      <div class="kpi"><div class="t">累计总价值</div><div class="v gold" id="s_val">¥0</div></div>
+      <div class="kpi"><div class="t">累计回血</div><div class="v green" id="s_rebate">¥0</div></div>
+      <div class="kpi"><div class="t">平均回血率</div><div class="v gold" id="s_rate">—</div></div>
+    </div>
+    <div class="card">
+      <h3>📊 各集团回血对比</h3>
+      <div id="groupStats"></div>
+    </div>
+    <div class="card">
+      <h3>🏆 最赚的一次</h3>
+      <div id="bestStay"></div>
+    </div>
+  </section>
+</main>
+<nav>
+  <button class="on" onclick="switchTab('add',this)"><span class="ic">✏️</span>记一笔</button>
+  <button onclick="switchTab('list',this)"><span class="ic">🧾</span>记录</button>
+  <button onclick="switchTab('stats',this)"><span class="ic">📊</span>统计</button>
+</nav>
+</div>
+<div id="mask" onclick="if(event.target===this)closeSheet()"><div id="sheet"></div></div>
+<script>
+"use strict";
+/* ---------- 数据 ---------- */
+const LS_KEY="hotel_ledger_v1";
+const GROUPS=[
+  {name:"希尔顿",rate:0.035},{name:"万豪",rate:0.06},{name:"洲际",rate:0.035},
+  {name:"凯悦",rate:0.11},{name:"雅高",rate:0.15},{name:"其他",rate:0.05}
+];
+const AMEN_TPL=[["普通矿泉水",2],["依云矿泉水",12],["巴黎水",12],["可乐",5],["咖啡包",8],["茶包",5],["拖鞋",15],["洗漱套装",30],["浴盐",10],["面膜",20]];
+const PERK_TPL=[["双人早餐",150],["行政酒廊",200],["延迟退房",100],["欢迎水果",50],["迷你吧消费",80],["房型升级",300]];
+let stays=load();
+let editingId=null;
+
+function load(){try{const a=JSON.parse(localStorage.getItem(LS_KEY));return Array.isArray(a)?a:[]}catch(e){return[]}}
+function persist(){localStorage.setItem(LS_KEY,JSON.stringify(stays))}
+const fmt=n=>"¥"+(Math.round((+n||0)*100)/100).toLocaleString("zh-CN");
+const num=v=>{const n=parseFloat(v);return isNaN(n)||n<0?0:n};
+function nightsOf(s){const a=new Date(s.checkin),b=new Date(s.checkout);const d=Math.round((b-a)/864e5);return d>0?d:0}
+function roomVal(s){return num(s.roomRate)*nightsOf(s)}
+function ptsVal(s){return num(s.points)*num(s.pointRate)}
+function amenVal(s){return (s.amenities||[]).reduce((t,r)=>t+num(r.qty)*num(r.price),0)}
+function perkVal(s){return (s.perks||[]).reduce((t,r)=>t+num(r.price),0)}
+function totalVal(s){return roomVal(s)+ptsVal(s)+amenVal(s)+perkVal(s)}
+function rebate(s){return totalVal(s)-num(s.paid)}
+function rebateRate(s){const p=num(s.paid);return p>0?totalVal(s)/p:0}
+function badge(s){const r=rebateRate(s);
+  if(r>=2)return['<span class="badge s1">🎉 血赚</span>'];
+  if(r>=1.3)return['<span class="badge s1">💰 超值</span>'];
+  if(r>=1)return['<span class="badge s2">✅ 回本</span>'];
+  return['<span class="badge s4">📉 待回血</span>']}
+
+/* ---------- 表单 ---------- */
+function initForm(){
+  const g=document.getElementById("f_group");
+  g.innerHTML=GROUPS.map((x,i)=>`<option value="${i}">${x.name}</option>`).join("");
+  g.onchange=()=>{document.getElementById("f_prate").value=GROUPS[+g.value].rate;liveCalc()};
+  const t=new Date(),tm=new Date(Date.now()+864e5);
+  const iso=d=>d.toISOString().slice(0,10);
+  document.getElementById("f_in").value=iso(t);
+  document.getElementById("f_out").value=iso(tm);
+  const ac=document.getElementById("amenChips");
+  ac.innerHTML=AMEN_TPL.map((x,i)=>`<span class="chip" onclick="addRow('amen',${i})">${x[0]} ¥${x[1]}</span>`).join("");
+  const pc=document.getElementById("perkChips");
+  pc.innerHTML=PERK_TPL.map((x,i)=>`<span class="chip" onclick="addRow('perk',${i})">${x[0]} ¥${x[1]}</span>`).join("");
+  document.getElementById("stayForm").addEventListener("input",liveCalc);
+  document.getElementById("stayForm").addEventListener("change",liveCalc);
+  liveCalc();
+}
+function addRow(kind,tplIdx){
+  const box=document.getElementById(kind==="amen"?"amenRows":"perkRows");
+  let name="",price="",qty="1";
+  if(kind==="amen"&&tplIdx!=null){name=AMEN_TPL[tplIdx][0];price=AMEN_TPL[tplIdx][1]}
+  if(kind==="perk"&&tplIdx!=null){name=PERK_TPL[tplIdx][0];price=PERK_TPL[tplIdx][1]}
+  const d=document.createElement("div");d.className="dynrow";
+  if(kind==="amen"){
+    d.innerHTML=`<input type="text" placeholder="名称" value="${name}" class="rn"><input type="number" min="0" step="1" placeholder="数量" value="${qty}" class="rq"><input type="number" min="0" step="0.01" placeholder="单价" value="${price}" class="rp"><span class="sub"></span><button type="button" class="rm" onclick="this.parentNode.remove();liveCalc()">×</button>`;
+  }else{
+    d.innerHTML=`<input type="text" placeholder="名称" value="${name}" class="rn" style="flex:2"><input type="number" min="0" step="0.01" placeholder="估价(元)" value="${price}" class="rp"><span class="sub"></span><button type="button" class="rm" onclick="this.parentNode.remove();liveCalc()">×</button>`;
+  }
+  box.appendChild(d);liveCalc();
+}
+function readRows(kind){
+  const box=document.getElementById(kind==="amen"?"amenRows":"perkRows");
+  const out=[];
+  box.querySelectorAll(".dynrow").forEach(r=>{
+    const name=(r.querySelector(".rn").value||"").trim();
+    if(kind==="amen"){
+      const q=num(r.querySelector(".rq").value),p=num(r.querySelector(".rp").value);
+      if(name||q||p)out.push({name:name||"未命名",qty:q||1,price:p});
+    }else{
+      const p=num(r.querySelector(".rp").value);
+      if(name||p)out.push({name:name||"未命名",price:p});
+    }
+  });
+  return out;
+}
+function formStay(){
+  return {
+    hotel:document.getElementById("f_hotel").value.trim(),
+    group:GROUPS[+document.getElementById("f_group").value].name,
+    checkin:document.getElementById("f_in").value,
+    checkout:document.getElementById("f_out").value,
+    paid:num(document.getElementById("f_paid").value),
+    roomRate:num(document.getElementById("f_room").value),
+    points:num(document.getElementById("f_points").value),
+    pointRate:num(document.getElementById("f_prate").value),
+    amenities:readRows("amen"),perks:readRows("perk"),
+    note:document.getElementById("f_note").value.trim()
+  };
+}
+function liveCalc(){
+  const s=formStay();
+  document.querySelectorAll("#amenRows .dynrow").forEach(r=>{
+    r.querySelector(".sub").textContent=fmt(num(r.querySelector(".rq").value)*num(r.querySelector(".rp").value));
+  });
+  document.querySelectorAll("#perkRows .dynrow").forEach(r=>{
+    r.querySelector(".sub").textContent=fmt(num(r.querySelector(".rp").value));
+  });
+  document.getElementById("pv_paid").textContent=fmt(s.paid);
+  document.getElementById("pv_afterpts").textContent=fmt(num(s.paid)-ptsVal(s));
+  document.getElementById("pv_val").textContent=fmt(totalVal(s));
+  const r=rebateRate(s);
+  document.getElementById("pv_rate").textContent=s.paid>0?Math.round(r*100)+"%":"—";
+}
+function validStay(s){
+  if(!s.hotel)return "请填写酒店名称";
+  if(!s.checkin||!s.checkout)return "请选择入住和退房日期";
+  if(nightsOf(s)<=0)return "退房日期必须晚于入住日期";
+  if(s.paid<=0&&totalVal(s)<=0)return "请至少填写实付金额或价值项";
+  return null;
+}
+function saveStay(){
+  const s=formStay();
+  const err=validStay(s);
+  if(err){alert(err);return}
+  if(editingId){
+    const i=stays.findIndex(x=>x.id===editingId);
+    if(i>=0){s.id=editingId;s.createdAt=stays[i].createdAt;stays[i]=s}
+    editingId=null;document.getElementById("cancelEdit").style.display="none";
+  }else{
+    s.id="s"+Date.now().toString(36);s.createdAt=Date.now();stays.unshift(s);
+  }
+  persist();resetForm();renderList();renderStats();
+  switchTab("list",document.querySelectorAll("nav button")[1]);
+  alert("已记下 ✅");
+}
+function resetForm(){
+  document.getElementById("stayForm").reset();initFormDefaults();
+  document.getElementById("amenRows").innerHTML="";document.getElementById("perkRows").innerHTML="";
+  liveCalc();
+}
+function initFormDefaults(){
+  const t=new Date(),tm=new Date(Date.now()+864e5),iso=d=>d.toISOString().slice(0,10);
+  document.getElementById("f_in").value=iso(t);document.getElementById("f_out").value=iso(tm);
+  document.getElementById("f_group").value="0";document.getElementById("f_prate").value=GROUPS[0].rate;
+}
+function cancelEdit(){editingId=null;document.getElementById("cancelEdit").style.display="none";resetForm()}
+function editStay(id){
+  const s=stays.find(x=>x.id===id);if(!s)return;
+  closeSheet();editingId=id;
+  document.getElementById("f_hotel").value=s.hotel;
+  const gi=GROUPS.findIndex(g=>g.name===s.group);
+  document.getElementById("f_group").value=gi>=0?gi:GROUPS.length-1;
+  document.getElementById("f_prate").value=s.pointRate;
+  document.getElementById("f_in").value=s.checkin;document.getElementById("f_out").value=s.checkout;
+  document.getElementById("f_paid").value=s.paid||"";document.getElementById("f_room").value=s.roomRate||"";
+  document.getElementById("f_points").value=s.points||"";document.getElementById("f_note").value=s.note||"";
+  document.getElementById("amenRows").innerHTML="";document.getElementById("perkRows").innerHTML="";
+  (s.amenities||[]).forEach(r=>{addRow("amen");const d=document.getElementById("amenRows").lastChild;
+    d.querySelector(".rn").value=r.name;d.querySelector(".rq").value=r.qty;d.querySelector(".rp").value=r.price});
+  (s.perks||[]).forEach(r=>{addRow("perk");const d=document.getElementById("perkRows").lastChild;
+    d.querySelector(".rn").value=r.name;d.querySelector(".rp").value=r.price});
+  document.getElementById("cancelEdit").style.display="block";
+  switchTab("add",document.querySelectorAll("nav button")[0]);
+  window.scrollTo(0,0);liveCalc();
+}
+function delStay(id){
+  if(!confirm("确定删除这条记录吗？"))return;
+  stays=stays.filter(x=>x.id!==id);persist();closeSheet();renderList();renderStats();
+}
+
+/* ---------- 列表 ---------- */
+function renderList(){
+  const box=document.getElementById("stayList");
+  if(!stays.length){box.innerHTML='<div class="empty">还没有记录<br>去「记一笔」记下你的第一次入住吧 🏨</div>';return}
+  const arr=[...stays].sort((a,b)=>(b.checkin||"").localeCompare(a.checkin||""));
+  box.innerHTML=arr.map(s=>{
+    const r=rebateRate(s);
+    return `<div class="stay" onclick="openSheet('${s.id}')">
+      <div class="top"><div><div class="hotel">${esc(s.hotel)}</div>
+      <div class="meta">${esc(s.group||"")} · ${s.checkin} → ${s.checkout} · ${nightsOf(s)}晚</div></div>
+      ${badge(s)}</div>
+      <div class="nums">
+        <div class="paid">实付<b>${fmt(s.paid)}</b></div>
+        <div class="val">总价值<b>${fmt(totalVal(s))}</b></div>
+        <div class="rb">回血<b>${fmt(rebate(s))}</b></div>
+        <div class="paid">回血率<b>${s.paid>0?Math.round(r*100)+"%":"—"}</b></div>
+      </div></div>`;
+  }).join("");
+}
+function esc(t){return String(t||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+/* ---------- 详情 ---------- */
+function openSheet(id){
+  const s=stays.find(x=>x.id===id);if(!s)return;
+  const r=rebateRate(s);
+  let h=`<div class="xbtn"><button onclick="closeSheet()">×</button></div>
+    <h2>${esc(s.hotel)}</h2><div class="dmeta">${esc(s.group||"")} · ${s.checkin} → ${s.checkout}（${nightsOf(s)}晚）${s.note?" · "+esc(s.note):""}</div>`;
+  h+=`<div class="dsub">⚖️ 三价对比</div>
+      <div class="dline"><span>💵 现金价格（实付）</span><span class="neg">${fmt(s.paid)}</span></div>
+      <div class="dline"><span>⭐ 积分回血后（实付 − 积分价值）</span><span class="neg">${fmt(num(s.paid)-ptsVal(s))}</span></div>
+      <div class="dline total"><span>💎 总价值（房型+积分+备品+权益）</span><span class="pos">${fmt(totalVal(s))}</span></div>
+      <div class="dsub">🧾 明细</div>
+      <div class="dline"><span>房型价值（${fmt(s.roomRate)}/晚 × ${nightsOf(s)}晚）</span><span class="pos">${fmt(roomVal(s))}</span></div>`;
+  if(num(s.points)>0)h+=`<div class="dline"><span>积分 ${num(s.points)}分 × ¥${s.pointRate}</span><span class="pos">${fmt(ptsVal(s))}</span></div>`;
+  if((s.amenities||[]).length){h+=`<div class="dsub">🧴 备品（${fmt(amenVal(s))}）</div>`;
+    s.amenities.forEach(a=>{h+=`<div class="dline"><span>${esc(a.name)} × ${a.qty}</span><span class="pos">${fmt(a.qty*a.price)}</span></div>`})}
+  if((s.perks||[]).length){h+=`<div class="dsub">🎁 权益（${fmt(perkVal(s))}）</div>`;
+    s.perks.forEach(a=>{h+=`<div class="dline"><span>${esc(a.name)}</span><span class="pos">${fmt(a.price)}</span></div>`})}
+  h+=`<div class="dline total"><span>回血（总价值 − 实付）</span><span class="pos">${fmt(rebate(s))}</span></div>
+      <div class="dline total"><span>回血率</span><span class="pos">${s.paid>0?Math.round(r*100)+"%":"—"}</span></div>
+      <div class="sheetbtns"><button class="btn btn-ghost" onclick="editStay('${s.id}')">✏️ 编辑</button>
+      <button class="btn btn-danger" onclick="delStay('${s.id}')">🗑 删除</button></div>`;
+  document.getElementById("sheet").innerHTML=h;
+  document.getElementById("mask").classList.add("show");
+}
+function closeSheet(){document.getElementById("mask").classList.remove("show")}
+
+/* ---------- 统计 ---------- */
+function renderStats(){
+  const n=stays.length;
+  const nights=stays.reduce((t,s)=>t+nightsOf(s),0);
+  const paid=stays.reduce((t,s)=>t+num(s.paid),0);
+  const val=stays.reduce((t,s)=>t+totalVal(s),0);
+  const pts=stays.reduce((t,s)=>t+ptsVal(s),0);
+  document.getElementById("s_nights").textContent=nights+" 晚";
+  document.getElementById("s_count").textContent=n+" 笔";
+  document.getElementById("s_paid").textContent=fmt(paid);
+  document.getElementById("s_afterpts").textContent=fmt(paid-pts);
+  document.getElementById("s_val").textContent=fmt(val);
+  document.getElementById("s_rebate").textContent=fmt(val-paid);
+  document.getElementById("s_rate").textContent=paid>0?Math.round(val/paid*100)+"%":"—";
+  // 按集团
+  const gm={};
+  stays.forEach(s=>{const g=s.group||"其他";gm[g]=gm[g]||{paid:0,val:0,n:0};
+    gm[g].paid+=num(s.paid);gm[g].val+=totalVal(s);gm[g].n++});
+  const gs=document.getElementById("groupStats");
+  const entries=Object.entries(gm).sort((a,b)=>b[1].val-a[1].val);
+  if(!entries.length){gs.innerHTML='<div class="hint">暂无数据</div>'}
+  else{
+    const max=Math.max(...entries.map(e=>e[1].val),1);
+    gs.innerHTML=entries.map(([g,d])=>{
+      const rate=d.paid>0?Math.round(d.val/d.paid*100):0;
+      return `<div class="grow"><div class="gt"><span>${esc(g)}（${d.n}笔）</span><span>${rate}%</span></div>
+      <div class="bar"><i style="width:${Math.round(d.val/max*100)}%"></i></div>
+      <div class="gs">实付 ${fmt(d.paid)} · 总价值 ${fmt(d.val)} · 回血 ${fmt(d.val-d.paid)}</div></div>`;
+    }).join("");
+  }
+  // 最赚
+  const bs=document.getElementById("bestStay");
+  if(!stays.length){bs.innerHTML='<div class="hint">暂无数据</div>'}
+  else{
+    const best=[...stays].sort((a,b)=>rebateRate(b)-rebateRate(a))[0];
+    bs.innerHTML=`<div class="stay" style="margin:0;cursor:pointer" onclick="openSheet('${best.id}')">
+      <div class="top"><div><div class="hotel">${esc(best.hotel)}</div>
+      <div class="meta">${best.checkin} → ${best.checkout}</div></div>${badge(best)}</div>
+      <div class="nums"><div class="paid">实付<b>${fmt(best.paid)}</b></div>
+      <div class="val">总价值<b>${fmt(totalVal(best))}</b></div>
+      <div class="paid">回血率<b>${best.paid>0?Math.round(rebateRate(best)*100)+"%":"—"}</b></div></div></div>`;
+  }
+}
+
+/* ---------- 导入导出 ---------- */
+function exportJSON(){
+  if(!stays.length){alert("还没有数据可导出");return}
+  const blob=new Blob([JSON.stringify(stays,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="酒店回本记账_备份_"+new Date().toISOString().slice(0,10)+".json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+function importJSON(inp){
+  const f=inp.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+    const a=JSON.parse(rd.result);
+    if(!Array.isArray(a))throw 0;
+    if(!confirm(`将导入 ${a.length} 条记录，覆盖当前全部数据吗？`))return;
+    stays=a.filter(x=>x&&x.hotel);persist();renderList();renderStats();alert("导入成功 ✅");
+  }catch(e){alert("文件格式不对，导入失败")}};rd.readAsText(f);inp.value="";
+}
+
+/* ---------- 导航 ---------- */
+function switchTab(name,btn){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  if(name==="list")renderList();
+  if(name==="stats")renderStats();
+  window.scrollTo(0,0);
+}
+initForm();renderList();renderStats();
+</script>
+</body>
+</html>
