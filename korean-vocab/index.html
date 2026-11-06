@@ -506,13 +506,24 @@ $('btn-practice').onclick=()=>startPractice(curUnit);
 /* ================= 背单词 ================= */
 /* ================= 不背单词式学习 ================= */
 let st=null;
-function startStudy(uid){
+function startStudy(uid,all){
   renderSpeedSeg();
-  const list=newWords(uid);
-  if(!list.length){uiConfirm('本课新词已学完，要来一轮 ♾️ 一直学 吗？',()=>startPractice(uid));return;}
+  const list=all?unitById(uid).words.map((w,i)=>i):newWords(uid);
+  if(!list.length){showStudyEmpty(uid);return;}
   st={uid,list,i:0,ok:0,mid:0,no:0,seenNo:{},max:0,votes:{}};
   $('flash-title').textContent='学习新词 · '+unitById(uid).title;
   renderStudyCard();openPage('page-flash');
+}
+function showStudyEmpty(uid){
+  $('flash-title').textContent='学习新词 · '+unitById(uid).title;
+  $('fc-progress').textContent='已完成';
+  $('fcard-in').innerHTML='<div class="fface" style="position:relative"><div class="zh-big">🎉 本课新词已学完</div>'+
+    '<div class="sub2">想再学一遍，还是直接刷题？</div></div>';
+  $('fc-ops').innerHTML='<button class="btn" id="st-restudy" style="flex:1">📖 重新学习本课</button>'+
+    '<button class="btn ghost" id="st-topractice" style="flex:1">♾️ 一直学</button>';
+  $('st-restudy').onclick=()=>startStudy(uid,true);
+  $('st-topractice').onclick=()=>startPractice(uid);
+  openPage('page-flash');
 }
 function renderStudyCard(){
   const u=unitById(st.uid);
@@ -521,9 +532,11 @@ function renderStudyCard(){
       '<div class="sub2">😊认识 '+st.ok+' · 🤔模糊 '+st.mid+' · 😞不认识 '+st.no+'</div>'+
       '<div class="tap">模糊和不认识的词明天会自动安排复习</div></div>';
     $('fc-progress').textContent='完成!';
-    $('fc-ops').innerHTML='<button class="btn" id="st-toquiz" style="flex:1">✏️ 测验整课</button>'+
+    $('fc-ops').innerHTML='<button class="btn" id="st-restudy" style="flex:1">📖 再学一遍</button>'+
+      '<button class="btn" id="st-toquiz" style="flex:1">✏️ 测验整课</button>'+
       '<button class="btn ghost" id="st-torev" style="flex:1">🔁 去复习</button>'+
       '<button class="btn ghost" id="st-back" style="flex:1">返回</button>';
+    $('st-restudy').onclick=()=>startStudy(st.uid,true);
     $('st-toquiz').onclick=()=>{$('page-flash').classList.remove('open');quizSetup(st.uid,null,'full');};
     $('st-torev').onclick=()=>{$('page-flash').classList.remove('open');startReview(st.uid);};
     $('st-back').onclick=()=>$('page-flash').classList.remove('open');
