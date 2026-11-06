@@ -627,18 +627,18 @@ function renderReviewEnd(){
 }
 /* ================= 一直学（学习卡片式·无限） ================= */
 let pr=null;
-function startPractice(uid){
+function startPractice(uid,ordered){
   renderSpeedSeg();
   const u=unitById(uid);
-  pr={uid,list:shuffle(u.words.map((w,i)=>i)),i:0,round:1};
+  pr={uid,ordered:!!ordered,list:ordered?u.words.map((w,i)=>i):shuffle(u.words.map((w,i)=>i)),i:0,round:1};
   $('flash-title').textContent='一直学 · '+u.title;
   renderPracticeCard();openPage('page-flash');
 }
 function renderPracticeCard(){
   const u=unitById(pr.uid);
-  if(pr.i>=pr.list.length){pr.list=shuffle(u.words.map((w,i)=>i));pr.i=0;pr.round++;}
+  if(pr.i>=pr.list.length){pr.list=pr.ordered?u.words.map((w,i)=>i):shuffle(u.words.map((w,i)=>i));pr.i=0;pr.round++;}
   const wi=pr.list[pr.i],w=u.words[wi];
-  $('fc-progress').textContent='第'+pr.round+'轮 · '+(pr.i+1)+'/'+pr.list.length;
+  $('fc-progress').textContent='第'+pr.round+'轮 · '+(pr.i+1)+'/'+pr.list.length+(pr.ordered?' · 顺序':' · 打乱');
   const exHtml=w.ex?'<div class="exbox"><div class="ex-ko" id="pr-exko">📝 '+esc(w.ex)+'</div><div class="ex-zh">'+esc(w.exzh||'')+'</div></div>':'';
   $('fcard-in').innerHTML='<div class="fface" style="position:relative;justify-content:flex-start;padding-top:24px">'+
     '<div class="big" id="pr-word" style="font-size:2.2rem">'+esc(w.w)+'</div>'+
@@ -654,9 +654,21 @@ function renderPracticeCard(){
   $('pr-slow').onclick=()=>speakSlow(w.w);
   const exk=$('pr-exko');if(exk)exk.onclick=()=>speak(w.ex);
   $('fc-ops').innerHTML='<button class="btn ghost" id="pr-prev" style="flex:1"'+(pr.i===0?' disabled':'')+'>← 上一个</button>'+
-    '<button class="btn" id="pr-next" style="flex:1">下一个 →</button>';
+    '<button class="btn" id="pr-next" style="flex:1">下一个 →</button>'+
+    '<div class="seg" id="pr-mode" style="flex-basis:100%;margin-bottom:0">'+
+    '<button data-m="order"'+(pr.ordered?' class="on"':'')+'>🔢 按顺序</button>'+
+    '<button data-m="shuffle"'+(!pr.ordered?' class="on"':'')+'>🔀 打乱</button></div>';
   $('pr-prev').onclick=()=>{if(pr.i>0){pr.i--;renderPracticeCard();}};
   $('pr-next').onclick=()=>{pr.i++;renderPracticeCard();};
+  $('pr-mode').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const wantOrder=b.dataset.m==='order';
+    if(wantOrder!==pr.ordered){
+      pr.ordered=wantOrder;
+      pr.list=wantOrder?u.words.map((w,i)=>i):shuffle(u.words.map((w,i)=>i));
+      pr.i=0;pr.round=1;
+    }
+    renderPracticeCard();
+  });
   speak(w.w);
 }
 /* ================= 测验 ================= *//* ================= 测验 ================= */
