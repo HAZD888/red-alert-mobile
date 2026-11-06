@@ -148,8 +148,9 @@ button{font-family:inherit;border:none;background:none;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:#1e2230;color:#fff;
   padding:10px 20px;border-radius:999px;font-size:.85rem;opacity:0;transition:all .3s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
-.seg{display:flex;background:var(--line);border-radius:12px;padding:3px;margin-bottom:12px}
+.seg{display:flex;background:var(--line);border-radius:12px;padding:3px;margin-bottom:12px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px;border-radius:9px;font-size:.82rem;color:var(--sub);font-weight:600}
+.speed-seg button{font-size:.75rem}
 .seg button.on{background:#fff;color:var(--pri);font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .exbox{background:#f4f5ff;border:1.5px dashed #c7d2fe;border-radius:12px;padding:12px;margin-top:14px;width:100%;text-align:left}
 .ex-ko{font-size:1.02rem;font-weight:700;line-height:1.7}
@@ -218,7 +219,11 @@ button{font-family:inherit;border:none;background:none;cursor:pointer}
   <div class="mine-card"><h3>📊 学习统计</h3><div id="mine-stats" style="font-size:.85rem;line-height:2"></div></div>
   <div class="mine-card"><h3>⭐ 收藏 (<span id="fav-n">0</span>)</h3><div id="fav-list"></div></div>
   <div class="mine-card"><h3>❌ 错词本 (<span id="wrong-n">0</span>) <button class="btn ghost" id="btn-wrong-quiz" style="padding:6px 12px;font-size:.75rem;margin-left:8px">测验错词</button></h3><div id="wrong-list"></div></div>
-  <div class="mine-card"><h3>⚙️ 设置</h3><div style="font-size:.78rem;color:var(--sub);margin-bottom:10px">ℹ️ 主屏幕版进度仅在本次打开有效，关掉即清零；要长期记录学习进度请用服务器版。</div>
+  <div class="mine-card"><h3>⚙️ 设置</h3><div style="margin:4px 0 10px">
+    <label style="font-size:.85rem;font-weight:700">🔊 朗读声音</label>
+    <select id="voice-sel" style="width:100%;margin-top:6px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:.9rem;background:#fff"></select>
+    <div style="font-size:.75rem;color:var(--sub);margin-top:6px;line-height:1.6">已自动选用最清晰的本地嗓音（增强版优先）。想更清晰：在 iPhone 设置 → 辅助功能 → 朗读内容 → 嗓音 → 韩语，下载「增强版」嗓音后回来这里切换。</div>
+  </div><div style="font-size:.78rem;color:var(--sub);margin-bottom:10px">ℹ️ 主屏幕版进度仅在本次打开有效，关掉即清零；要长期记录学习进度请用服务器版。</div>
     <div class="btn-row"><button class="btn red" id="btn-reset">🗑 清除全部学习记录</button></div>
   </div>
 </div>
@@ -245,7 +250,7 @@ button{font-family:inherit;border:none;background:none;cursor:pointer}
       <button class="btn ghost" id="btn-practice" style="width:100%;border-color:var(--amber);color:var(--amber)">♾️ 一直学（无限练习）</button>
     </div>
     <div id="unit-counts" class="st-count"></div>
-    <div class="seg speed-seg" style="margin-bottom:12px"><button data-s="0.5">0.5x</button><button data-s="0.75">0.75x</button><button data-s="1" class="on">1x</button><button data-s="1.25">1.25x</button><button data-s="1.5">1.5x</button><button data-s="2">2x</button></div>
+    <div class="seg speed-seg" style="margin-bottom:12px"><button data-s="0.3">0.3x</button><button data-s="0.4">0.4x</button><button data-s="0.5">0.5x</button><button data-s="0.75">0.75x</button><button data-s="1" class="on">1x</button><button data-s="1.25">1.25x</button><button data-s="1.5">1.5x</button><button data-s="2">2x</button></div>
     <div id="word-list"></div>
   </div>
 </div>
@@ -254,7 +259,7 @@ button{font-family:inherit;border:none;background:none;cursor:pointer}
 <div class="page" id="page-flash">
   <div class="page-head"><button class="back" data-close>‹</button><h2 id="flash-title">背单词</h2></div>
   <div class="page-body"><div class="fc-wrap">
-    <div class="seg speed-seg" style="margin-bottom:12px"><button data-s="0.5">0.5x</button><button data-s="0.75">0.75x</button><button data-s="1" class="on">1x</button><button data-s="1.25">1.25x</button><button data-s="1.5">1.5x</button><button data-s="2">2x</button></div>
+    <div class="seg speed-seg" style="margin-bottom:12px"><button data-s="0.3">0.3x</button><button data-s="0.4">0.4x</button><button data-s="0.5">0.5x</button><button data-s="0.75">0.75x</button><button data-s="1" class="on">1x</button><button data-s="1.25">1.25x</button><button data-s="1.5">1.5x</button><button data-s="2">2x</button></div>
     <div class="fc-progress" id="fc-progress"></div>
     <div class="fcard" id="fcard"><div class="fcard-in" id="fcard-in"></div></div>
     <div class="fc-ops" id="fc-ops">
@@ -331,7 +336,7 @@ const JUNG=['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','�
 /* ================= 工具 & 状态 ================= */
 const $=id=>document.getElementById(id);
 const LS='krvocab1';
-let S={known:{},fav:[],wrong:[],best:{},speed:1,sm:{}};
+let S={known:{},fav:[],wrong:[],best:{},speed:1,sm:{},voiceURI:null};
 
 /* SM-2 lite */
 function getSM(uid,i){return (S.sm[uid]||{})[i]||null;}
@@ -345,15 +350,38 @@ let _cfmCb=null;
 function uiConfirm(msg,cb){$('cfm-msg').textContent=msg;_cfmCb=cb;$('cfm-mask').style.display='flex';}
 $('cfm-no').onclick=()=>{$('cfm-mask').style.display='none';_cfmCb=null;};
 $('cfm-yes').onclick=()=>{$('cfm-mask').style.display='none';const cb=_cfmCb;_cfmCb=null;if(cb)cb();};
-let koVoice=null;
-function pickVoice(){try{const vs=speechSynthesis.getVoices();koVoice=vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith('ko'))||null;}catch(e){}}
+let koVoice=null,koVoices=[];
+function scoreVoice(v){
+  let s=0;
+  if(v.localService)s+=3;
+  const n=(v.name||'').toLowerCase();
+  if(n.includes('enhanced')||n.includes('premium')||n.includes('natural'))s+=4;
+  if(n.includes('siri'))s+=2;
+  if(n.includes('yuna'))s+=1;
+  return s;
+}
+function pickVoice(){
+  try{
+    const vs=speechSynthesis.getVoices();
+    koVoices=vs.filter(v=>v.lang&&v.lang.toLowerCase().startsWith('ko'));
+    koVoice=koVoices.length?(koVoices.find(v=>v.voiceURI===S.voiceURI)||koVoices.slice().sort((a,b)=>scoreVoice(b)-scoreVoice(a))[0]):null;
+    renderVoicePicker();
+  }catch(e){}
+}
+function renderVoicePicker(){
+  const sel=$('voice-sel');if(!sel)return;
+  if(!koVoices.length){sel.innerHTML='<option>未找到韩语嗓音</option>';return;}
+  sel.innerHTML=koVoices.map((v,i)=>'<option value="'+i+'"'+(koVoice&&v.voiceURI===koVoice.voiceURI?' selected':'')+'>'+esc(v.name)+(v.localService?'':' · 云端')+'</option>').join('');
+  sel.onchange=()=>{const v=koVoices[+sel.value];if(v){S.voiceURI=v.voiceURI;save();koVoice=v;speak('\uc548\ub155\ud558\uc138\uc694');}};
+}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
 function speak(txt,rate){try{
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(txt);u.lang='ko-KR';u.rate=(rate!=null?rate:(S.speed||1));
+  const u=new SpeechSynthesisUtterance(txt);u.lang='ko-KR';u.rate=(rate!=null?rate:(S.speed||1));u.volume=1;u.pitch=1;
   if(koVoice)u.voice=koVoice;
   speechSynthesis.speak(u);
 }catch(e){}}
+function speakSlow(txt){speak([...txt].join(' '),0.4);}
 const unitById=id=>UNITS.find(u=>u.id===id);
 const wordKey=(uid,i)=>uid+':'+i;
 const isFav=(uid,i)=>S.fav.some(f=>f[0]===uid&&f[1]===i);
@@ -515,7 +543,7 @@ function renderStudyCard(){
     '<div class="tap">点单词 / 例句可朗读 · ← → 回看已学过的卡片</div></div>';
   $('st-word').onclick=()=>speak(w.w);
   $('st-spk').onclick=()=>speak(w.w);
-  $('st-slow').onclick=()=>speak(w.w,0.55);
+  $('st-slow').onclick=()=>speakSlow(w.w);
   const exk=$('st-exko');if(exk)exk.onclick=()=>speak(w.ex);
   const v=st.votes[st.i];
   $('fc-ops').innerHTML='<button class="btn red'+(v==='no'?' picked':'')+'" id="st-no">😞不认识</button>'+
@@ -610,7 +638,7 @@ function renderPracticeCard(){
     '<div class="tap">点单词 / 例句可朗读 · 上方调语速</div></div>';
   $('pr-word').onclick=()=>speak(w.w);
   $('pr-spk').onclick=()=>speak(w.w);
-  $('pr-slow').onclick=()=>speak(w.w,0.55);
+  $('pr-slow').onclick=()=>speakSlow(w.w);
   const exk=$('pr-exko');if(exk)exk.onclick=()=>speak(w.ex);
   $('fc-ops').innerHTML='<button class="btn ghost" id="pr-prev" style="flex:1"'+(pr.i===0?' disabled':'')+'>← 上一个</button>'+
     '<button class="btn" id="pr-next" style="flex:1">下一个 →</button>';
@@ -816,7 +844,7 @@ $('btn-wrong-quiz').onclick=()=>{
 };
 $('btn-reset').onclick=()=>{
   uiConfirm('确定要清除全部学习记录吗？收藏和错词本也会清空。',()=>{
-    S={known:{},fav:[],wrong:[],best:{},speed:1,sm:{}};save();
+    S={known:{},fav:[],wrong:[],best:{},speed:1,sm:{},voiceURI:null};save();
     refreshStats();renderUnits();renderMine();renderSoundBest();toast('已清除');
   });
 };
